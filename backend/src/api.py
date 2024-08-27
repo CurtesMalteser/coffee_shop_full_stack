@@ -44,6 +44,7 @@ def get_drinks():
 
 
 @app.route("/drinks-detail")
+@requires_auth('get:drinks-detail')
 def get_drinks_detail():
     '''
     @TODO implement endpoint
@@ -58,6 +59,7 @@ def get_drinks_detail():
 
 
 @app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
 def create_drink():
     '''
     @TODO implement endpoint
@@ -72,6 +74,7 @@ def create_drink():
     return abort(404, "Create drink not implemented")
 
 @app.route('/drinks', methods=['PATCH'])
+@requires_auth('patch:drinks')
 def update_drink(id: int):
     '''
     @TODO implement endpoint
@@ -88,6 +91,7 @@ def update_drink(id: int):
     return abort(404, "Update drink not implemented")
 
 @app.route('/drinks/<int:id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
 def delete_drink():
     '''
     @TODO implement endpoint
