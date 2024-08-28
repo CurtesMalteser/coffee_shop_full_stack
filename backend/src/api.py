@@ -1,4 +1,3 @@
-import os
 from flask import Flask, request, jsonify, abort
 from flask.wrappers import Response
 from sqlalchemy import exc
@@ -33,19 +32,20 @@ def get_drinks():
         where drinks is the list of drinks
         or appropriate status code indicating reason for failure
     '''
-    drinks = Drink.query.order_by(Drink.id).all()
-    drinks = [drink.long() for drink in drinks]
-    print(drinks)
-
-    return jsonify({
-        "success": True,
-        "drinks": drinks
-    })
+    try:
+        drinks = Drink.query.order_by(Drink.id).all()
+        drinks = [drink.long() for drink in drinks]    
+        return jsonify({
+            "success": True,
+            "drinks": drinks
+        })
+    except Exception as e:
+        abort(404, e)
 
 
 @app.route("/drinks-detail")
 @requires_auth('get:drinks-detail')
-def get_drinks_detail():
+def get_drinks_detail(payload):
     '''
     @TODO implement endpoint
         GET /drinks-detail
@@ -55,7 +55,16 @@ def get_drinks_detail():
             where drinks is the list of drinks
             or appropriate status code indicating reason for failure
     '''
-    return abort(404, "Not implemented")
+    try:
+        print(payload)
+        drinks = Drink.query.order_by(Drink.id).all()
+        drinks = [drink.long() for drink in drinks]
+        return jsonify({
+            "success": True,
+            "drinks": drinks
+        })
+    except Exception as e:
+        abort(404, e)
 
 
 @app.route('/drinks', methods=['POST'])
@@ -131,13 +140,29 @@ def unprocessable(error):
 
 '''
 
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above
-'''
+@app.errorhandler(404)
+def not_found(error):
+    '''
+    @TODO implement error handler for 404
+        error handler should conform to general task above
+    '''
+    return jsonify({
+        "success": False, 
+        "error": 404,
+        "message": error,
+        }), 404
 
 
-'''
-@TODO implement error handler for AuthError
+
+@app.errorhandler(AuthError)
+def auth_error(error):
+    '''
+    @TODO implement error handler for AuthError
     error handler should conform to general task above
-'''
+    '''
+    code = error.status_code
+    return jsonify({
+        "success": False, 
+        "code": code,
+        "description": error.error['description'],
+        }), code
