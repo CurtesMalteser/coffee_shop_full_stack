@@ -69,7 +69,7 @@ def get_drinks_detail(payload):
 
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def create_drink():
+def create_drink(payload):
     '''
     @TODO implement endpoint
         POST /drinks
@@ -80,7 +80,24 @@ def create_drink():
             where drink an array containing only the newly created drink
             or appropriate status code indicating reason for failure
     '''
-    return abort(404, "Create drink not implemented")
+
+    print(payload)
+
+    try:
+        body = request.get_json()
+        drink = Drink(
+            title=body.get('title'),
+            recipe=json.dumps(body.get('recipe'))
+        )
+
+        drink.insert()
+
+        return jsonify({
+                "success": True,
+                "drinks": drink.long()
+            })
+    except Exception as e:
+        abort(422)
 
 @app.route('/drinks', methods=['PATCH'])
 @requires_auth('patch:drinks')
@@ -122,6 +139,7 @@ def unprocessable(error):
     '''
     Example error handling for unprocessable entity
     '''
+    print(error)
     return jsonify({
         "success": False,
         "error": 422,
