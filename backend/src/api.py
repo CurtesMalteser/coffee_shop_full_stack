@@ -99,6 +99,7 @@ def create_drink(payload):
     except Exception as e:
         abort(422)
 
+
 @app.route('/drinks', methods=['PATCH'])
 @requires_auth('patch:drinks')
 def update_drink(id: int):
@@ -115,6 +116,7 @@ def update_drink(id: int):
             or appropriate status code indicating reason for failure
     '''
     return abort(404, "Update drink not implemented")
+
 
 @app.route('/drinks/<int:id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
@@ -133,6 +135,24 @@ def delete_drink():
     return abort(404, "Delete Drink not implemented")
 
 
+def json_error(error, code):
+    '''
+    @TODO implement error handlers using the @app.errorhandler(error) decorator
+        each error handler should return (with approprate messages):
+                jsonify({
+                        "success": False,
+                        "error": 404,
+                        "message": "resource not found"
+                        }), 404
+
+    '''
+    return jsonify({
+        "success": False, 
+        "error": code,
+        "message": error,
+        }), code
+
+
 # Error Handling
 @app.errorhandler(422)
 def unprocessable(error):
@@ -140,23 +160,8 @@ def unprocessable(error):
     Example error handling for unprocessable entity
     '''
     print(error)
-    return jsonify({
-        "success": False,
-        "error": 422,
-        "message": "unprocessable"
-    }), 422
+    return json_error("unprocessable", 422)
 
-
-'''
-@TODO implement error handlers using the @app.errorhandler(error) decorator
-    each error handler should return (with approprate messages):
-             jsonify({
-                    "success": False,
-                    "error": 404,
-                    "message": "resource not found"
-                    }), 404
-
-'''
 
 @app.errorhandler(404)
 def not_found(error):
@@ -164,12 +169,7 @@ def not_found(error):
     @TODO implement error handler for 404
         error handler should conform to general task above
     '''
-    return jsonify({
-        "success": False, 
-        "error": 404,
-        "message": error,
-        }), 404
-
+    return json_error(error, 404)
 
 
 @app.errorhandler(AuthError)
@@ -179,8 +179,4 @@ def auth_error(error):
     error handler should conform to general task above
     '''
     code = error.status_code
-    return jsonify({
-        "success": False, 
-        "code": code,
-        "description": error.error['description'],
-        }), code
+    return json_error(error.error['description'], code)
