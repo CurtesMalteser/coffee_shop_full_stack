@@ -1,6 +1,4 @@
 from flask import Flask, request, jsonify, abort
-from flask.wrappers import Response
-from sqlalchemy import exc
 import json
 from flask_cors import CORS
 
@@ -63,6 +61,7 @@ def get_drinks_detail(payload):
             "success": True,
             "drinks": drinks
         })
+
     except Exception as e:
         abort(404, e)
 
@@ -96,13 +95,14 @@ def create_drink(payload):
                 "success": True,
                 "drinks": drink.long()
             })
+
     except Exception as e:
         abort(422)
 
 
-@app.route('/drinks', methods=['PATCH'])
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def update_drink(id: int):
+def update_drink(payload, drink_id: int):
     '''
     @TODO implement endpoint
         PATCH /drinks/<id>
@@ -115,12 +115,31 @@ def update_drink(id: int):
             where drink an array containing only the updated drink
             or appropriate status code indicating reason for failure
     '''
-    return abort(404, "Update drink not implemented")
+    print(payload)
+
+    try:
+        drink = Drink.query.get(drink_id)
+
+        if drink is None:
+            abort(404, "Drink not found")
+        
+        body = request.get_json()
+        drink.title=body.get('title')
+        drink.recipe=json.dumps(body.get('recipe'))
+        drink.update()
+
+        return jsonify({
+                "success": True,
+                "drinks": drink.long()
+            })
+
+    except Exception:
+        abort(422)
 
 
-@app.route('/drinks/<int:id>', methods=['DELETE'])
+@app.route('/drinks/<int:drink_id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
-def delete_drink():
+def delete_drink(payload, drink_id: int):
     '''
     @TODO implement endpoint
         DELETE /drinks/<id>
@@ -132,7 +151,20 @@ def delete_drink():
             where id is the id of the deleted record
             or appropriate status code indicating reason for failure
     '''
-    return abort(404, "Delete Drink not implemented")
+    print(payload)
+
+    try:
+        drink = Drink.query.get(drink_id)
+
+        drink.delete()
+
+        return jsonify({
+                "success": True,
+                "delete": drink_id
+            })
+
+    except Exception:
+        abort(404)
 
 
 def json_error(error, code):
@@ -169,7 +201,8 @@ def not_found(error):
     @TODO implement error handler for 404
         error handler should conform to general task above
     '''
-    return json_error(error, 404)
+    print(error)
+    return json_error("Not found", 404)
 
 
 @app.errorhandler(AuthError)
