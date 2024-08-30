@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, abort
 import json
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
@@ -124,14 +125,31 @@ def update_drink(payload, drink_id: int):
             abort(404, "Drink not found")
         
         body = request.get_json()
-        drink.title=body.get('title')
-        drink.recipe=json.dumps(body.get('recipe'))
+
+        if body is None:
+            abort(422, "No data provided")
+
+        if 'title' in body:
+            title = body.get('title')
+            drink.title= title
+
+        
+        if 'recipe' in body:
+            recipe = body.get('recipe')
+            drink.recipe=json.dumps(recipe)
+
         drink.update()
 
         return jsonify({
                 "success": True,
-                "drinks": drink.long()
+                "drinks": [drink.long()]
             })
+
+    except HTTPException as error:
+        if getattr(error, 'code', None) == 404:
+            abort(404)
+        else:
+            raise error
 
     except Exception:
         abort(422)
@@ -156,6 +174,9 @@ def delete_drink(payload, drink_id: int):
     try:
         drink = Drink.query.get(drink_id)
 
+        if drink is None:
+            abort(404, "Drink not found")
+
         drink.delete()
 
         return jsonify({
@@ -163,8 +184,14 @@ def delete_drink(payload, drink_id: int):
                 "delete": drink_id
             })
 
+    except HTTPException as error:
+        if getattr(error, 'code', None) == 404:
+            abort(404)
+        else:
+            raise error
+
     except Exception:
-        abort(404)
+        abort(422)
 
 
 def json_error(error, code):
