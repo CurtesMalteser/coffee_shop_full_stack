@@ -20,9 +20,12 @@ CORS(app)
 
 # ROUTES
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001, debug=True)
+
 @app.route("/drinks")
 def get_drinks():
-    '''
+    """
     @TODO implement endpoint error handling
     GET /drinks
         it should be a public endpoint
@@ -30,7 +33,7 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drinks}
         where drinks is the list of drinks
         or appropriate status code indicating reason for failure
-    '''
+    """
     try:
         drinks = Drink.query.order_by(Drink.id).all()
         drinks = [drink.long() for drink in drinks]    
@@ -45,7 +48,7 @@ def get_drinks():
 @app.route("/drinks-detail")
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(payload):
-    '''
+    """
     @TODO implement endpoint
         GET /drinks-detail
             it should require the 'get:drinks-detail' permission
@@ -53,7 +56,7 @@ def get_drinks_detail(payload):
         returns status code 200 and json {"success": True, "drinks": drinks}
             where drinks is the list of drinks
             or appropriate status code indicating reason for failure
-    '''
+    """
     try:
         print(payload)
         drinks = Drink.query.order_by(Drink.id).all()
@@ -70,7 +73,7 @@ def get_drinks_detail(payload):
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
 def create_drink(payload):
-    '''
+    """
     @TODO implement endpoint
         POST /drinks
             it should create a new row in the drinks table
@@ -79,7 +82,7 @@ def create_drink(payload):
         returns status code 200 and json {"success": True, "drinks": drink}
             where drink an array containing only the newly created drink
             or appropriate status code indicating reason for failure
-    '''
+    """
 
     print(payload)
 
@@ -104,7 +107,7 @@ def create_drink(payload):
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
 def update_drink(payload, drink_id: int):
-    '''
+    """
     @TODO implement endpoint
         PATCH /drinks/<id>
             where <id> is the existing model id
@@ -115,7 +118,7 @@ def update_drink(payload, drink_id: int):
         returns status code 200 and json {"success": True, "drinks": drink}
             where drink an array containing only the updated drink
             or appropriate status code indicating reason for failure
-    '''
+    """
     print(payload)
 
     try:
@@ -158,7 +161,7 @@ def update_drink(payload, drink_id: int):
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
 def delete_drink(payload, drink_id: int):
-    '''
+    """
     @TODO implement endpoint
         DELETE /drinks/<id>
             where <id> is the existing model id
@@ -168,7 +171,8 @@ def delete_drink(payload, drink_id: int):
         returns status code 200 and json {"success": True, "delete": id}
             where id is the id of the deleted record
             or appropriate status code indicating reason for failure
-    '''
+    """
+
     print(payload)
 
     try:
@@ -195,7 +199,7 @@ def delete_drink(payload, drink_id: int):
 
 
 def json_error(error, code):
-    '''
+    """
     @TODO implement error handlers using the @app.errorhandler(error) decorator
         each error handler should return (with approprate messages):
                 jsonify({
@@ -204,7 +208,8 @@ def json_error(error, code):
                         "message": "resource not found"
                         }), 404
 
-    '''
+    """
+
     return jsonify({
         "success": False, 
         "error": code,
@@ -215,28 +220,28 @@ def json_error(error, code):
 # Error Handling
 @app.errorhandler(422)
 def unprocessable(error):
-    '''
+    """
     Example error handling for unprocessable entity
-    '''
+    """
     print(error)
     return json_error("unprocessable", 422)
 
 
 @app.errorhandler(404)
 def not_found(error):
-    '''
+    """
     @TODO implement error handler for 404
         error handler should conform to general task above
-    '''
+    """
     print(error)
     return json_error("Not found", 404)
 
 
 @app.errorhandler(AuthError)
 def auth_error(error):
-    '''
+    """
     @TODO implement error handler for AuthError
     error handler should conform to general task above
-    '''
+    """
     code = error.status_code
     return json_error(error.error['description'], code)
