@@ -71,7 +71,11 @@ The `--reload` flag will detect file changes and restart the server automaticall
      - can `get:drinks`
    - Manager
      - can perform all actions
-7. Test your endpoints with [Postman](https://getpostman.com).
+7. Create .env file to store Auth0 details
+   - declare `AUTH0_DOMAIN=<DOMANIN>`
+   - declare `API_AUDIENCE=<AUDIENCE>`
+8. Run the server
+9. Test your endpoints with [Postman](https://getpostman.com).
    - Register 2 users - assign the Barista role to one and Manager role to the other.
    - Sign into each account and make note of the JWT.
    - Import the postman collection `./starter_code/backend/udacity-fsnd-udaspicelatte.postman_collection.json`
@@ -85,3 +89,16 @@ There are `@TODO` comments throughout the `./backend/src`. We recommend tackling
 
 1. `./src/auth/auth.py`
 2. `./src/api.py`
+
+### Running the server on Docker
+
+After testing locally
+1. Build container
+    ```bash
+    flask export $(cat .env | xargs) && docker build --build-arg AUTH0_DOMAIN=$AUTH0_DOMAIN --build-arg API_AUDIENCE=$API_AUDIENCE -t coffee_shop .
+    ```
+2. Run docker
+    ```bash
+   docker run -it -p 5001:5001 --name coffee_shop coffee_shop
+    ```
+3. Test with curl, fronted or Postman 
